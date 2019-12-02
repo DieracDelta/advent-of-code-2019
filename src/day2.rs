@@ -62,7 +62,6 @@ pub fn part_2() -> io::Result<usize> {
 }
 
 pub fn find_input(mut input_data: Vec<usize>) -> usize {
-    println!("input_data: {}", input_data.len());
     for i in 0..input_data.len() / 4 {
         let index_0 = input_data[4 * i + 1];
         let index_1 = input_data[4 * i + 2];
