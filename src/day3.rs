@@ -1,21 +1,31 @@
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
+use std::iter::FromIterator;
 use std::str::FromStr;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Copy)]
 pub struct Step {
     direction: Direction,
-    magnitude: usize,
+    magnitude: isize,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
+pub struct Line {
+    x1: isize,
+    y1: isize,
+    x2: isize,
+    y2: isize,
+}
+
+#[derive(Clone, Copy, Debug)]
 pub struct CurState {
-    x: usize,
-    y: usize,
+    x: isize,
+    y: isize,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug)]
 enum Direction {
     Right,
     Left,
@@ -45,7 +55,7 @@ pub fn parse_input() -> io::Result<Vec<Vec<Step>>> {
                 .map(|x: &str| -> Step {
                     Step {
                         direction: Direction::from(x.as_bytes()[0]),
-                        magnitude: usize::from_str(
+                        magnitude: isize::from_str(
                             std::str::from_utf8(&x.as_bytes()[1..]).unwrap(),
                         )
                         .unwrap(),
@@ -56,105 +66,115 @@ pub fn parse_input() -> io::Result<Vec<Vec<Step>>> {
         .collect())
 }
 
-pub fn increment_current_state(cur: &mut CurState, step: Step, start_state: &mut CurState) {
+pub fn increment_current_state(cur: &mut CurState, step: &Step) {
     match step.direction {
         Direction::Right => cur.x += step.magnitude,
         Direction::Left => {
-            if cur.x < step.magnitude {
-                start_state.x += step.magnitude - cur.x;
-                cur.x = 0;
-            } else {
-                cur.x -= step.magnitude;
-            }
+            cur.x -= step.magnitude;
         }
         Direction::Up => cur.y += step.magnitude,
         Direction::Down => {
-            if cur.y < step.magnitude {
-                start_state.y += step.magnitude - cur.y;
-                cur.y = 0;
-            } else {
-                cur.y -= step.magnitude;
-            }
-        }
-        Direction::Unknown => panic!("unknown direction"),
-    }
-}
-
-pub fn inc_and_mark(cur: &mut CurState, step: Step, state: &mut Vec<Vec<u8>>) {
-    match step.direction {
-        Direction::Right => {
-            for i in 1..step.magnitude + 1 {
-                state[cur.x + i][cur.y] += 1;
-            }
-            cur.x += step.magnitude;
-        }
-        Direction::Left => {
-            for i in 1..step.magnitude + 1 {
-                state[cur.x - i][cur.y] += 1;
-            }
-            cur.x -= step.magnitude;
-        }
-        Direction::Up => {
-            for i in 1..step.magnitude + 1 {
-                state[cur.x][cur.y + i] += 1;
-            }
-            cur.y += step.magnitude;
-        }
-        Direction::Down => {
-            for i in 1..step.magnitude + 1 {
-                state[cur.x][cur.y - i] += 1;
-            }
             cur.y -= step.magnitude;
         }
         Direction::Unknown => panic!("unknown direction"),
     }
 }
 
-pub fn find_dims(input_data: &Vec<Vec<Step>>, mut start_state: &mut CurState) -> (usize, usize) {
-    let mut max_x = 0;
-    let mut max_y = 0;
-    for vec in input_data {
-        let mut state = CurState { x: 0, y: 0 };
-        for step in vec {
-            increment_current_state(&mut state, step.clone(), &mut start_state);
-            if state.x > max_x {
-                max_x = state.x
+pub fn get_lines<'a>(input: Vec<Step>) -> Vec<Line> {
+    let start_state = &mut CurState { x: 0, y: 0 };
+    input
+        .iter()
+        .map(|x: &Step| -> Line {
+            let temp_state = start_state.clone();
+            increment_current_state(start_state, x);
+            Line {
+                x1: temp_state.x,
+                y1: temp_state.y,
+                x2: start_state.x,
+                y2: start_state.y,
             }
-            if state.y > max_y {
-                max_y = state.y
-            }
-        }
-    }
-    (max_x, max_y)
-}
-
-pub fn mark(input_data: &Vec<Step>, state: &mut Vec<Vec<u8>>, mut start_state: CurState) {
-    for entry in input_data {
-        inc_and_mark(&mut start_state, entry.clone(), state);
-    }
+        })
+        .collect::<Vec<Line>>()
 }
 
 pub fn part_1() -> io::Result<usize> {
     let input_data = parse_input().unwrap();
-    let mut start_state = CurState { x: 0, y: 0 };
-    let dims = find_dims(&input_data, &mut start_state);
-    let mut state = vec![vec![0u8; dims.1]; dims.0];
-    &input_data
-        .into_iter()
-        .map(|x| mark(&x, &mut state, start_state.clone()));
+    let player_1 = get_lines(input_data[0].clone());
+    let player_2 = get_lines(input_data[1].clone());
+    let p1_hm = &mut std::collections::HashMap::<(isize, isize), usize>::new();
+    let p2_hm = &mut std::collections::HashMap::<(isize, isize), usize>::new();
+    construct_hashmap(&player_1, p1_hm);
+    construct_hashmap(&player_2, p2_hm);
+    p1_hm.remove(&(0, 0));
+    p2_hm.remove(&(0, 0));
+    let set_1 = HashSet::<(isize, isize)>::from_iter(p1_hm.keys().cloned());
+    let set_2 = HashSet::<(isize, isize)>::from_iter(p2_hm.keys().cloned());
+    Ok(set_1
+        .intersection(&set_2)
+        .map(|a| -> usize { a.0.abs() as usize + a.1.abs() as usize })
+        .min()
+        .unwrap())
+}
 
-    let mut man_dist = usize::max_value();
-    for x in 0..dims.0 {
-        for y in 0..dims.1 {
-            if state[x][y] == 2 && x + y < man_dist {
-                println!("hi");
-                man_dist = x + y;
+pub fn construct_hashmap(
+    lines: &Vec<Line>,
+    hm: &mut std::collections::HashMap<(isize, isize), usize>,
+) {
+    let mut counter: usize = 0;
+    for line in lines {
+        if line.x1 == line.x2 {
+            if line.y1 < line.y2 {
+                for y in line.y1..(line.y2) {
+                    if !hm.contains_key(&(line.x1, y)) {
+                        hm.insert((line.x1, y), counter);
+                    }
+                    counter += 1;
+                }
+            } else {
+                for y in (line.y2..line.y1).rev() {
+                    if !hm.contains_key(&(line.x1, y)) {
+                        hm.insert((line.x1, y), counter);
+                    }
+                    counter += 1;
+                }
             }
+        } else if line.y1 == line.y2 {
+            if line.x1 < line.x2 {
+                for x in line.x1..line.x2 {
+                    if !hm.contains_key(&(x, line.y1)) {
+                        hm.insert((x, line.y1), counter);
+                    }
+                    counter += 1;
+                }
+            } else {
+                for x in (line.x2..line.x1).rev() {
+                    if !hm.contains_key(&(x, line.y1)) {
+                        hm.insert((x, line.y1), counter);
+                    }
+                    counter += 1;
+                }
+            }
+        } else {
+            panic!("SHIT");
         }
     }
-    Ok(man_dist)
 }
 
 pub fn part_2() -> io::Result<usize> {
-    Ok(5)
+    let input_data = parse_input().unwrap();
+    let player_1 = get_lines(input_data[0].clone());
+    let player_2 = get_lines(input_data[1].clone());
+    let p1_hm = &mut std::collections::HashMap::<(isize, isize), usize>::new();
+    let p2_hm = &mut std::collections::HashMap::<(isize, isize), usize>::new();
+    construct_hashmap(&player_1, p1_hm);
+    construct_hashmap(&player_2, p2_hm);
+    p1_hm.remove(&(0, 0));
+    p2_hm.remove(&(0, 0));
+    let set_1 = HashSet::<(isize, isize)>::from_iter(p1_hm.keys().cloned());
+    let set_2 = HashSet::<(isize, isize)>::from_iter(p2_hm.keys().cloned());
+    Ok(set_1
+        .intersection(&set_2)
+        .map(|a| -> usize { p1_hm[a] + p2_hm[a] })
+        .min()
+        .unwrap())
 }
