@@ -48,8 +48,8 @@ pub fn part_1() -> io::Result<usize> {
 
 pub fn part_2() -> io::Result<usize> {
     let input_data = parse_input().unwrap();
-    for i in 0..10000 {
-        for j in 0..10000 {
+    for i in 0..100 {
+        for j in 0..100 {
             let mut copy = input_data.to_vec();
             copy[1] = i;
             copy[2] = j;
@@ -68,21 +68,21 @@ pub fn find_input(mut input_data: Vec<usize>) -> usize {
         let index_2 = input_data[4 * i + 3];
         match Opcode::from(input_data[4 * i]) {
             Opcode::Add => {
-                if index_0 >= input_data.len()
-                    || index_1 >= input_data.len()
-                    || index_2 >= input_data.len()
-                {
-                    return 0;
-                }
+                //if index_0 >= input_data.len()
+                //|| index_1 >= input_data.len()
+                //|| index_2 >= input_data.len()
+                //{
+                //return 0;
+                //}
                 input_data[index_2] = input_data[index_0] + input_data[index_1];
             }
             Opcode::Multiply => {
-                if index_0 >= input_data.len()
-                    || index_1 >= input_data.len()
-                    || index_2 >= input_data.len()
-                {
-                    return 0;
-                }
+                //if index_0 >= input_data.len()
+                //|| index_1 >= input_data.len()
+                //|| index_2 >= input_data.len()
+                //{
+                //return 0;
+                //}
                 input_data[index_2] = input_data[index_0] * input_data[index_1];
             }
             Opcode::Halt => break,
