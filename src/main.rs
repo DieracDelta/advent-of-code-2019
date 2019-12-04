@@ -1,6 +1,7 @@
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 use std::env;
 use std::str::FromStr;
 
@@ -23,6 +24,11 @@ fn main() {
         3 => match part {
             1 => day3::part_1().unwrap().to_string(),
             2 => day3::part_2().unwrap().to_string(),
+            _ => fail_str,
+        },
+        4 => match part {
+            1 => day4::part_1().unwrap().to_string(),
+            2 => day4::part_2().unwrap().to_string(),
             _ => fail_str,
         },
         _ => fail_str,
