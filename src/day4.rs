@@ -1,9 +1,4 @@
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::{self, BufReader};
-use std::iter::FromIterator;
-use std::str::FromStr;
+use std::io::{self};
 
 pub fn part_1() -> io::Result<usize> {
     let mut counter = 0;
@@ -53,7 +48,6 @@ pub fn non_multiple(mut i: usize) -> bool {
     for _ in 0..=5 {
         let ls = i % 10;
         a.push(ls);
-        println!("{:?}, {:?}", i, ls);
         i = i / 10;
     }
     a.push(100);
@@ -66,7 +60,6 @@ pub fn non_multiple(mut i: usize) -> bool {
             counter += 1;
         } else {
             if counter == 2 {
-                println!("true");
                 return true;
             } else {
                 counter = 1;
@@ -74,7 +67,6 @@ pub fn non_multiple(mut i: usize) -> bool {
         }
         prev_ele = anele;
     }
-    println!("{:?}", false);
     false
 
     //r_val

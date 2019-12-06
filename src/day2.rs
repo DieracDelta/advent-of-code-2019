@@ -1,38 +1,21 @@
+use crate::utils::Opcode;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
 use std::str::FromStr;
 
-enum Opcode {
-    Add = 1,
-    Multiply = 2,
-    Halt = 99,
-    Unknown,
-}
-
-impl From<usize> for Opcode {
-    fn from(val: usize) -> Opcode {
-        match val {
-            1 => Opcode::Add,
-            2 => Opcode::Multiply,
-            99 => Opcode::Halt,
-            _ => Opcode::Unknown,
-        }
-    }
-}
-
-pub fn parse_input() -> io::Result<Vec<usize>> {
-    Ok(BufReader::new(File::open("./input/input-day-2.txt")?)
+pub fn parse_input(input_str: &str) -> io::Result<Vec<isize>> {
+    Ok(BufReader::new(File::open(input_str)?)
         .lines()
-        .map(|a| -> Vec<usize> {
+        .map(|a| -> Vec<isize> {
             a.unwrap()
                 .split(",")
-                .map(|x| -> usize { usize::from_str(x).unwrap() })
-                .collect::<Vec<usize>>()
+                .map(|x| -> isize { isize::from_str(x).unwrap() })
+                .collect::<Vec<isize>>()
         })
         .fold(
             vec![],
-            |mut x: Vec<usize>, mut y: Vec<usize>| -> Vec<usize> {
+            |mut x: Vec<isize>, mut y: Vec<isize>| -> Vec<isize> {
                 x.append(&mut y);
                 x
             },
@@ -40,24 +23,28 @@ pub fn parse_input() -> io::Result<Vec<usize>> {
 }
 
 pub fn part_1() -> io::Result<usize> {
-    let mut input_data = parse_input().unwrap();
+    let mut input_data = parse_input("./input/input-day-2.txt")
+        .unwrap()
+        .iter()
+        .map(|x| -> usize { *x as usize })
+        .collect::<Vec<usize>>();
     input_data[1] = 12;
     input_data[2] = 2;
-    Ok(find_input(input_data))
+    Ok(find_input(input_data) as usize)
 }
 
 pub fn part_2() -> io::Result<usize> {
-    let input_data = parse_input().unwrap();
-    for i in 0..100 {
-        for j in 0..100 {
-            let mut copy = input_data.to_vec();
-            copy[1] = i;
-            copy[2] = j;
-            if find_input(copy) == 19690720 {
-                return Ok(100 * i + j);
-            }
-        }
-    }
+    //let input_data = parse_input("./input/input-day-2.txt").unwrap();
+    //for i in 0..100 {
+    //for j in 0..100 {
+    //let mut copy = input_data.to_vec();
+    //copy[1] = i;
+    //copy[2] = j;
+    //if find_input(copy) == 19690720 {
+    //return Ok((100 * i + j) as usize);
+    //}
+    //}
+    //}
     Ok(0)
 }
 
@@ -86,7 +73,7 @@ pub fn find_input(mut input_data: Vec<usize>) -> usize {
                 input_data[index_2] = input_data[index_0] * input_data[index_1];
             }
             Opcode::Halt => break,
-            Opcode::Unknown => {
+            _ => {
                 println!("bad news bears");
                 break;
             }
