@@ -3,3 +3,6 @@ name = "aoc_19"
 version = "0.1.0"
 authors = ["Justin Restivo <jrestivo@mit.edu>"]
 edition = "2018"
+
+[dependencies]
+itertools = "0.8.2"

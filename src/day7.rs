@@ -1,84 +1,54 @@
 use crate::day2;
 use crate::utils;
+use itertools::*;
 use std::convert::TryFrom;
 use std::io::{self};
 
 pub fn part_1() -> io::Result<usize> {
     let program = day2::parse_input("./input/input-day-7.txt").unwrap();
     let mut rval = 0;
-    for i in 0..=4 {
-        for j in 0..=4 {
-            for k in 0..=4 {
-                for m in 0..=4 {
-                    for n in 0..=4 {
-                        if i == j
-                            || i == k
-                            || i == m
-                            || i == n
-                            || j == k
-                            || j == m
-                            || j == n
-                            || k == m
-                            || k == n
-                            || m == n
-                        {
-                            continue;
-                        }
-                        let new_val =
-                            usize::try_from(run_thruster(vec![i, j, k, m, n], program.clone()))
-                                .unwrap();
-                        println!(
-                            "combo: {:?}{:?}{:?}{:?}{:?} val: {:?}",
-                            i, j, k, m, n, new_val
-                        );
-                        if new_val > rval {
-                            rval = new_val;
-                        }
-                    }
-                }
+    iproduct!(5..=9, 5..=9, 5..=9, 5..=9, 5..=9)
+        .filter(|x| {
+            vec![x.0, x.1, x.2, x.3, x.4]
+                .into_iter()
+                .unique()
+                .collect::<Vec<_>>()
+                .len()
+                == 5
+        })
+        .for_each(|x| {
+            let new_val =
+                usize::try_from(run_thruster(vec![x.0, x.1, x.2, x.3, x.4], program.clone()))
+                    .unwrap();
+            if new_val > rval {
+                rval = new_val;
             }
-        }
-    }
+        });
     Ok(rval)
 }
+
 pub fn part_2() -> io::Result<usize> {
     let program = day2::parse_input("./input/input-day-7.txt").unwrap();
     let mut rval = 0;
-    for i in 5..=9 {
-        for j in 5..=9 {
-            for k in 5..=9 {
-                for m in 5..=9 {
-                    for n in 5..=9 {
-                        if i == j
-                            || i == k
-                            || i == m
-                            || i == n
-                            || j == k
-                            || j == m
-                            || j == n
-                            || k == m
-                            || k == n
-                            || m == n
-                        {
-                            continue;
-                        }
-                        let new_val = usize::try_from(run_thruster_loop(
-                            vec![i, j, k, m, n],
-                            program.clone(),
-                        ))
-                        .unwrap();
-                        println!(
-                            "combo: {:?}{:?}{:?}{:?}{:?} val: {:?}",
-                            i, j, k, m, n, new_val
-                        );
-                        if new_val > rval {
-                            rval = new_val;
-                        }
-                    }
-                }
+    iproduct!(5..=9, 5..=9, 5..=9, 5..=9, 5..=9)
+        .filter(|x| {
+            vec![x.0, x.1, x.2, x.3, x.4]
+                .into_iter()
+                .unique()
+                .collect::<Vec<_>>()
+                .len()
+                == 5
+        })
+        .for_each(|x| {
+            let new_val = usize::try_from(run_thruster_loop(
+                vec![x.0, x.1, x.2, x.3, x.4],
+                program.clone(),
+            ))
+            .unwrap();
+            if new_val > rval {
+                rval = new_val;
             }
-        }
-    }
+        });
     Ok(rval)
 }
 
@@ -109,7 +79,6 @@ pub fn run_thruster_loop(thruster_ids: Vec<isize>, program: Vec<isize>) -> isize
                         },
                     ) {
                         Some((output, pc)) => {
-                            println!("output: {:?}", output);
                             pc_list[index] = pc;
                             output
                         }
