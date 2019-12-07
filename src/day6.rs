@@ -32,7 +32,7 @@ pub fn part_1() -> io::Result<usize> {
     let cur_set = &mut HashSet::<String>::new();
     //let queue: VecDeque<String> = VecDeque::new();
     cur_set.insert("SAN".to_owned());
-    let mut seen = &mut HashSet::<String>::new();
+    let seen = &mut HashSet::<String>::new();
     let mut num_orbits = 0;
     let mut depth = 0;
     while !cur_set.is_empty() {
