@@ -7,48 +7,24 @@ use std::io::{self};
 pub fn part_1() -> io::Result<usize> {
     let program = day2::parse_input("./input/input-day-7.txt").unwrap();
     let mut rval = 0;
-    iproduct!(5..=9, 5..=9, 5..=9, 5..=9, 5..=9)
-        .filter(|x| {
-            vec![x.0, x.1, x.2, x.3, x.4]
-                .into_iter()
-                .unique()
-                .collect::<Vec<_>>()
-                .len()
-                == 5
-        })
-        .for_each(|x| {
-            let new_val =
-                usize::try_from(run_thruster(vec![x.0, x.1, x.2, x.3, x.4], program.clone()))
-                    .unwrap();
-            if new_val > rval {
-                rval = new_val;
-            }
-        });
+    (5..=9).permutations(5).for_each(|x| {
+        let new_val = usize::try_from(run_thruster(x, program.clone())).unwrap();
+        if new_val > rval {
+            rval = new_val;
+        }
+    });
     Ok(rval)
 }
 
 pub fn part_2() -> io::Result<usize> {
     let program = day2::parse_input("./input/input-day-7.txt").unwrap();
     let mut rval = 0;
-    iproduct!(5..=9, 5..=9, 5..=9, 5..=9, 5..=9)
-        .filter(|x| {
-            vec![x.0, x.1, x.2, x.3, x.4]
-                .into_iter()
-                .unique()
-                .collect::<Vec<_>>()
-                .len()
-                == 5
-        })
-        .for_each(|x| {
-            let new_val = usize::try_from(run_thruster_loop(
-                vec![x.0, x.1, x.2, x.3, x.4],
-                program.clone(),
-            ))
-            .unwrap();
-            if new_val > rval {
-                rval = new_val;
-            }
-        });
+    (5..=9).permutations(5).for_each(|x| {
+        let new_val = usize::try_from(run_thruster_loop(x.to_vec(), program.clone())).unwrap();
+        if new_val > rval {
+            rval = new_val;
+        }
+    });
     Ok(rval)
 }
 
