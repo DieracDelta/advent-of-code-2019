@@ -44,7 +44,7 @@ pub fn part_2() -> io::Result<usize> {
         .take_while(|x| *x != '\n')
         .map(|x| -> u8 { char::to_digit(x, 10).unwrap() as u8 })
         .collect::<Vec<u8>>();
-    let result = (0..25 * 6)
+    (0..25 * 6)
         .map(|index| -> u8 {
             *parsed
                 .iter()
@@ -53,8 +53,7 @@ pub fn part_2() -> io::Result<usize> {
                 .find(|&&x| x == 0 || x == 1)
                 .unwrap() as u8
         })
-        .collect::<Vec<u8>>();
-    result
+        .collect::<Vec<u8>>()
         .chunks(25)
         .map(|x| {
             println!(
